@@ -50,7 +50,6 @@ def run_episode(env, policy, render=False):
     gym.logger.set_level(40)
     state = np.array([env.reset()])
     total_reward = 0
-    steps = 0
     for s in range(MAX_STEPS):
         if render:
             env.render()
@@ -58,7 +57,7 @@ def run_episode(env, policy, render=False):
         action = policy.get_action(state[-1])
         s, reward, done, _ = env.step(action)
         state = np.append(state, [s], axis=0)
-        reward = np.clip(reward, -1, 1)
+        reward = np.clip(reward, -10, 10)
         total_reward += reward
         if done:
             break;

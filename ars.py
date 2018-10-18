@@ -4,7 +4,6 @@ from general import LinearPolicy, run_episode
 from multiprocessing import Pool
 import multiprocessing
 from functools import partial
-import gym
 
 
 N_DIR = 20
@@ -29,12 +28,14 @@ def rollout(delta, env, policy):
 
 # Collect 2N rollouts and their corresponding rewards using the 2N policies
 def collect_rollouts(p, env, policy, deltas):
+    # distrubute the processing of the rollouts to the workers
     rollout_deltas=partial(rollout, env=env, policy=policy)
     rollouts = p.map(rollout_deltas, deltas)
 
     rpos = []
     rneg = []
     for r in rollouts:
+        # collect the rewards
         rpos.append(r[0])
         rneg.append(r[1])
         # update environment statistics
@@ -55,7 +56,6 @@ def train(env, policy=None):
     train_steps = trange(TRAIN_STEPS)
 
     for s in train_steps:
-        gym.logger.set_level(40)
         deltas = np.array([np.random.randn(*policy.weights.shape) for _ in range(N_DIR)])
 
         # collect rewards using the random directions
@@ -71,9 +71,7 @@ def train(env, policy=None):
 
         # calculate the update step
         sigma_rewards = np.sum(r, axis=0).std()
-
         sum = np.sum([ (r[0][i] - r[1][i])*deltas[i] for i in range(len(r)) ], axis=0)
-
         update = ALPHA / (N_DIR * sigma_rewards) * sum
 
         # update policy 
